@@ -196,6 +196,29 @@ docker compose --env-file .env -f docker/docker-compose.yml up --build -d
 
 ---
 
+## 🧪 Testing
+
+The project includes a **25-test pytest suite** covering both API and application-level functionality. The tests validate backend availability, table-view APIs, sales/supplier/inventory dashboards, report generation, procurement operations, simulation, ML pipeline endpoints, agent components, and ML/feature-engineering components.
+
+The API tests use a configurable `API_URL`, with the default pointing to the local FastAPI server:
+
+```bash
+API_URL=http://127.0.0.1:8000
+```
+
+Run the full suite against the local FastAPI + PostgreSQL environment:
+
+```bash
+pytest -v
+```
+
+> **Note:** The test suite is intentionally **not** run against the Azure production database. Some tests — particularly procurement, simulation, and ML-pipeline tests — can modify database state or trigger processing. Running only locally keeps production data isolated while still providing a full regression and integration-testing layer during development.
+
+**Summary:** 25 automated pytest tests covering APIs, agents, database-backed functionality, procurement, simulation, and ML components — executed against the local application environment to validate functionality without modifying production data.
+
+<img src="https://img.shields.io/badge/Tests-25%20passing-brightgreen.svg" />
+---
+
 ## 📌 Roadmap / Future Improvements
 
 - [ ] Expand forecasting benchmarks across additional intermittent-demand models
