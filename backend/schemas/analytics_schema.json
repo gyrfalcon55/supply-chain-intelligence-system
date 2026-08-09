@@ -1,0 +1,173 @@
+{
+    "master_data": {
+        "inventory_data": {
+            "description": "Stores inventory master data including product details, stock levels, pricing information, and procurement information.",
+            "primary_key": "Product_ID",
+            "keywords": [
+                "master_schema",
+                "inventory_data",
+                "inventory",
+                "stock levels",
+                "master_data"
+            ],
+            "columns": {
+                "Product_ID": {
+                    "type": "string",
+                    "description": "Unique identifier for the product."
+                },
+                "Product_Name": {
+                    "type": "string",
+                    "description": "Name of the product."
+                },
+                "Category": {
+                    "type": "string",
+                    "description": "Main product category."
+                },
+                "Subcategory": {
+                    "type": "string",
+                    "description": "Product subcategory."
+                },
+                "Unit": {
+                    "type": "string",
+                    "description": "Unit of measurement for the product."
+                },
+                "Unit_Cost": {
+                    "type": "numeric",
+                    "description": "Procurement cost per unit."
+                },
+                "Standard_Price": {
+                    "type": "numeric",
+                    "description": "Standard selling price per unit."
+                },
+                "Current_Stock": {
+                    "type": "integer",
+                    "description": "Current inventory quantity available."
+                },
+                "Reorder_Level": {
+                    "type": "integer",
+                    "description": "Minimum stock level before replenishment is required."
+                },
+                "Safety_Stock": {
+                    "type": "integer",
+                    "description": "Buffer stock maintained to avoid stockouts."
+                },
+                "Last_Planning_Date": {
+                    "type": "date",
+                    "description": "Most recent procurement date for the product."
+                },
+                "Inventory_Value": {
+                    "type": "numeric",
+                    "description": "Total inventory value for the product."
+                },
+                "Last_Updated": {
+                    "type": "numeric",
+                    "description": "Total inventory value for the product."
+                }
+            }
+        }
+    },
+    "processed_data": {
+        "processed_sales_orders": {
+            "description": "Processed sales order dataset. Join to inventory_data using unique_id = Product_ID.",
+            "keywords": [
+                "processed",
+                "order_quantity",
+                "sales",
+                "orders",
+                "processed_sales_orders",
+                "processed_data",
+                "products",
+                "highest selling products"
+            ],
+            "columns": {
+                "ds": {
+                    "type": "date",
+                    "description": "Date column used for time-series analysis and forecasting."
+                },
+                "y": {
+                    "type": "numeric",
+                    "description": "Target metric or aggregated sales value, also known as the order quantity."
+                },
+                "unique_id": {
+                    "type": "string",
+                    "description": "Unique identifier for the product."
+                }
+            }
+        }
+    },
+    "simulation_data": {
+        "simulated_daily_sales": {
+            "description": "Simulated daily sales and inventory tracking dataset. Join to processed_sales_orders using Product_ID = unique_id.",
+            "keywords": [
+                "simulation",
+                "daily sales",
+                "inventory",
+                "demand",
+                "forecast",
+                "closing",
+                "simulation_data",
+                "simulated_daily_sales"
+            ],
+            "columns": {
+                "Sales_Date": {
+                    "type": "date",
+                    "description": "Date of the simulated daily sales transaction."
+                },
+                "Product_ID": {
+                    "type": "string",
+                    "description": "Unique identifier for the product, maps to unique_id."
+                },
+                "Opening": {
+                    "type": "numeric",
+                    "description": "Opening inventory stock available at the start of the day."
+                },
+                "Forecast": {
+                    "type": "numeric",
+                    "description": "Projected or expected demand quantity for the day."
+                },
+                "Demand": {
+                    "type": "numeric",
+                    "description": "Actual or generated customer demand quantity for the day."
+                },
+                "Sales_qty": {
+                    "type": "numeric",
+                    "description": "Actual quantity sold based on available opening inventory and demand."
+                },
+                "Lost_sales": {
+                    "type": "numeric",
+                    "description": "Unfulfilled demand quantity due to stockouts."
+                },
+                "Closing": {
+                    "type": "numeric",
+                    "description": "Remaining inventory stock at the end of the day."
+                }
+            }
+        }
+    },
+    "forecast_data": {
+        "forecast_sales_orders": {
+            "description": "forecasted dataset",
+            "keywords": [
+                "forecast",
+                "forecast_sales",
+                "orders",
+                "forecast_sales_orders",
+                "forecast_data"
+            ],
+            "columns": {
+                "ds": {
+                    "type": "date",
+                    "description": "Date column used for time-series analysis and forecasting."
+                },
+                "CrostonClassic": {
+                    "type": "numeric",
+                    "description": "Target metric or aggregated sales value, also known as the order quantity."
+                },
+                "unique_id": {
+                    "type": "string",
+                    "description": "Unique identifier for the time series."
+                }
+            }
+        }
+    }
+}

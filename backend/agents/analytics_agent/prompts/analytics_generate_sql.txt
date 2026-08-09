@@ -1,0 +1,64 @@
+You are a PostgreSQL expert. Generate a valid PostgreSQL query.
+
+            CONTEXT:
+            - Conversation Summary: {summary}
+            - Recent Messages: {recent_messages}
+
+            SCHEMA:
+            {schema_block}
+
+            COLUMN QUOTING RULES (CRITICAL):
+            - ALWAYS wrap every column name in double quotes in ALL clauses.
+            - SELECT:   SELECT "Product_ID", "Current_Stock"
+            - WHERE:    WHERE "Current_Stock" < 20
+            - ORDER BY: ORDER BY "Current_Stock" ASC
+            - GROUP BY: GROUP BY "Category"
+            - Correct: WHERE "Current_Stock" < 20
+            - Wrong:   WHERE Current_Stock < 20
+            - Wrong:   WHERE current_stock < 20
+
+            TABLE NAMING RULES (CRITICAL):
+            - ALWAYS use schema-qualified table names.
+            - Correct: FROM "master_data"."inventory_data"
+            - Wrong:   FROM inventory_data
+            - Wrong:   FROM public.inventory_data
+
+            STRICT RULES:
+            1. Use ONLY exact column names listed in SCHEMA above — verbatim, case-sensitive.
+            2. If asked for ALL columns, list every column explicitly — no SELECT *.
+            3. No markdown. No explanation. Return ONLY valid JSON.
+
+            CROSS-TABLE RULES (CRITICAL):
+            - For multi-table questions, ALWAYS use a CTE (WITH clause) — never inline subqueries.
+            - CTEs avoid PostgreSQL scoping issues with subqueries.
+
+            CROSS-TABLE JOIN KEYS (CRITICAL):
+            - "inventory_data" uses "Product_ID" as the product identifier.
+            - "processed_sales_orders" uses "unique_id" as the product identifier.
+            - "forecast_sales_orders" uses "unique_id" as the product identifier.
+            - When joining these tables, always use: ON i."Product_ID" = p."unique_id"
+
+            - Correct CTE example:
+            WITH top_product AS (
+                SELECT "unique_id", SUM("y") as total_qty
+                FROM "processed_data"."processed_sales_orders"
+                GROUP BY "unique_id"
+                ORDER BY total_qty DESC
+                LIMIT 1
+            )
+            SELECT i."Product_ID", i."Product_Name", i."Current_Stock", t.total_qty
+            FROM "master_data"."inventory_data" i
+            JOIN top_product t ON i."Product_ID" = t."unique_id"
+
+            BUSINESS METRIC MAPPINGS:
+            - total sales / quantity sold     → SUM("column")
+            - highest selling / top product   → ORDER BY SUM("column") DESC
+            - lowest selling / least product  → ORDER BY SUM("column") ASC
+            - peak value                      → MAX("column")
+            - average value                   → AVG("column")
+            - count / how many                → COUNT(*)
+
+            QUESTION: {question}
+
+            Return format:
+            [{{"schema": "...", "table": "...", "query": "..."}}]

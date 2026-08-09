@@ -1,0 +1,39 @@
+# Environment / secrets
+.env
+.env.*
+!.env.example
+root_files/.env*
+
+# Python environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+
+# Testing / type checking
+.pytest_cache/
+.mypy_cache/
+
+# IDE
+.vscode/
+.idea/
+
+# Generated packaging metadata
+*.egg-info/
+
+# Notebook generated files
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+notebooks/anaconda_projects/
+
+# Generated ML artifacts
+/artifacts/
+
+# OS
+.DS_Store
+Thumbs.db

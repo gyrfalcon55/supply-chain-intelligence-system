@@ -1,0 +1,26 @@
+raw_schema:
+  schema_name: raw_data
+  table_name: sales_orders
+
+
+processed_schema:
+  schema_name: processed_data
+  table_name: processed_sales_orders
+
+evaluation_schema:
+  schema_name: evaluation_data
+  test_data: evaluation_test 
+  train_data: evaluation_train
+
+forecasting:
+  frequency: W
+  horizon: 1
+  schema_name: forecast_data
+  table_name: forecast_sales_orders
+  
+
+artifacts:
+  model_dir: artifacts/models
+
+
+

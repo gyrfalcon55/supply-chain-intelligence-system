@@ -1,0 +1,34 @@
+Issues in ml_pipeline.py + ml_pipeline_routes.py — Priority Ordered
+🔴 Critical (fix first — correctness/crash risks)
+
+pipeline_status throws raw 500 on unknown job_id
+jobs[job_id] in ml_pipeline_routes.py will raise KeyError if the ID doesn't exist (stale ID, typo, server restarted). Needs a proper 404 with a clean message.
+No concurrency guard on pipeline runs
+Nothing stops two Threads running Ml_Pipeline().run_ml_pipeline() at the same time — double-click, two tabs, two users. Can corrupt DB writes or MLflow runs if they overlap.
+Frontend has no timeout on the polling loop
+while True in ml_pipeline.py polls forever if the backend thread dies silently without updating job status. No escape hatch — page hangs indefinitely.
+No exception handling around requests calls in the frontend
+If the backend is down/slow/returns non-200, response.json() raises and the whole Streamlit page crashes with a raw traceback instead of a clean error message.
+
+🟠 High (architectural gaps — will bite you as soon as this leaves your laptop)
+
+In-memory jobs dict won't survive restarts or multiple workers
+State lives only in process memory. A server restart loses all job history; running more than one backend worker means each has its own jobs dict and status lookups will randomly fail.
+Raw exception text leaked to the client
+job["error"] = str(e) sends internal exception details (DB errors, paths, etc.) straight to st.error(). Should log full detail server-side, return a generic message to the client.
+No logging anywhere in either file
+If run_job fails, there's zero trace beyond the in-memory dict — no timestamp, traceback, or job_id in any log. Makes debugging a failed run essentially impossible after the fact.
+
+🟡 Medium (real, but not blocking)
+
+Blocking while True loop freezes the whole Streamlit app
+While polling, the user can't navigate away or interact with anything else in the app — this is a UX/architecture limitation of the current polling pattern, separate from the "no timeout" issue above.
+No double-click / already-running guard on the button
+No session_state flag to prevent re-triggering the pipeline while one is already in flight — feeds directly into issue #2.
+Hardcoded, inconsistent API_URL
+127.0.0.1:8000 here vs localhost:8000 in chatbot.py. Should be one shared config value (env var or config file), not copy-pasted per file.
+
+🟢 Low (cosmetic / informational)
+
+Progress bar is cosmetic
+progress is only ever 0 or 100 — no incremental updates from inside run_ml_pipeline, so the bar jumps straight from 0% to 100% with nothing in between. Not broken, just not doing what it visually implies.
