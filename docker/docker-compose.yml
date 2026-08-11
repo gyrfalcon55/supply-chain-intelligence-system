@@ -48,7 +48,7 @@ services:
       - "8000:8000"
 
   mlflow:
-    image: ghcr.io/mlflow/mlflow:3.12.0
+    image: ghcr.io/mlflow/mlflow:latest
     container_name: supplychain-mlflow
     restart: unless-stopped
 
@@ -81,6 +81,23 @@ services:
 
     ports:
       - "8501:8501"
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: supplychain-litellm
+    restart: unless-stopped
+
+    env_file:
+      - ../.env
+
+    command: >
+      --config /app/config.yaml --port 4000 --host 0.0.0.0
+
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
+
+    expose:
+      - "4000"
 
 volumes:
   postgres_data:

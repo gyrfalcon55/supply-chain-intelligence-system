@@ -40,6 +40,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      litellm:
+        condition: service_started
 
     ports:
       - "8000:8000"
@@ -75,6 +77,23 @@ services:
 
     ports:
       - "8501:8501"
+
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    container_name: supplychain-litellm
+    restart: unless-stopped
+
+    env_file:
+      - ../.env
+
+    command: >
+      --config /app/config.yaml --port 4000 --host 0.0.0.0
+
+    volumes:
+      - ./litellm/config.yaml:/app/config.yaml:ro
+
+    expose:
+      - "4000"
 
 volumes:
   postgres_data:

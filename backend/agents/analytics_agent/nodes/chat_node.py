@@ -1,9 +1,11 @@
 from backend.agents.analytics_agent.analytics_agent_state import Analytics_Bot
 from langchain_core.messages import AIMessage
-from backend.services.llm_service import llm
+from backend.services.llm_service import LLM
 
 
 async def chat_node(state: Analytics_Bot):
+
+    llm = LLM()
 
     question = state['messages'][-1].content
 
@@ -16,7 +18,7 @@ async def chat_node(state: Analytics_Bot):
         {question}
         '''
     
-    result = await llm.gpt_20b.ainvoke(prompt)
+    result = await llm.mini_model_with_fallback.ainvoke(prompt)
 
 
     return {"messages": [AIMessage(content=result.content)]}

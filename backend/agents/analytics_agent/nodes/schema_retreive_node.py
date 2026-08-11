@@ -1,6 +1,6 @@
 from configs.config import load_config
 from backend.services.db_schema_service import load_schema
-from backend.services.llm_service import llm
+from backend.services.llm_service import LLM
 from langchain_core.messages import get_buffer_string
 
 from backend.agents.analytics_agent.analytics_agent_state import Analytics_Bot
@@ -23,6 +23,8 @@ RAW_SCHEMA = load_schema(analytics_schema_details)  # load once at startup, not 
 
 async def relevant_schema(state: Analytics_Bot) -> Analytics_Bot:
     try:
+
+        llm = LLM()
         question = state['messages'][-1].content
         summary = state.get('conversation_summary') or "No conversation summary found"
         recent_messages = get_buffer_string(state['messages'][-6:])
@@ -57,7 +59,7 @@ async def relevant_schema(state: Analytics_Bot) -> Analytics_Bot:
             Return format:
             [{{"schema": "...", "table": "..."}}]
             """)
-        chain = prompt | llm.gpt_20b
+        chain = prompt | llm.mini_model_with_fallback
         response = await chain.ainvoke({
             "summary":summary,
             "recent_messages": recent_messages,

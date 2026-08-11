@@ -5,7 +5,7 @@ import json
 
 from langchain_core.prompts import ChatPromptTemplate
 from backend.services.prompts_service import ANALYTICS_GENERATE_SQL_PROMPT
-from backend.services.llm_service import llm
+from backend.services.llm_service import LLM
 
 from utils.logger import logging
 from utils.exception import CustomException
@@ -20,6 +20,7 @@ import sys
 
 async def generate_sql(state: Analytics_Bot) -> Analytics_Bot:
     try:
+        llm = LLM()
         schema_data = json.loads(state["schema"])
         question = state['messages'][-1].content
         summary = state.get('conversation_summary') or "No conversation summary found"
@@ -43,7 +44,7 @@ async def generate_sql(state: Analytics_Bot) -> Analytics_Bot:
             ANALYTICS_GENERATE_SQL_PROMPT
         )
 
-        chain = prompt | llm.llama_70b
+        chain = prompt | llm.large_model_with_fallback
 
         sql_query = await chain.ainvoke({
             "summary":summary,
@@ -52,6 +53,8 @@ async def generate_sql(state: Analytics_Bot) -> Analytics_Bot:
             "question":question
 
         })
+
+        logging.info(sql_query)
 
         return {
             "generated_sql":sql_query.content

@@ -66,6 +66,6 @@ jobs:
             docker compose \
               --env-file .env \
               -f docker/docker-compose.azure.yml \
-              up -d --force-recreate backend frontend
+              up -d --force-recreate backend frontend litellm
 
             docker image prune -f

@@ -1,5 +1,5 @@
 from backend.agents.analytics_agent.analytics_agent_state import Analytics_Bot
-from backend.services.llm_service import llm
+from backend.services.llm_service import LLM
 
 from langchain_core.messages import get_buffer_string
 from langchain_core.messages import HumanMessage, RemoveMessage
@@ -11,9 +11,10 @@ import sys
 
 
 def route_counter(state):
+    llm = LLM()
     conversation = get_buffer_string(state["messages"])
 
-    token_count = llm.gpt_20b.get_num_tokens(conversation)
+    token_count = llm.mini_model_with_fallback.get_num_tokens(conversation)
 
     if token_count >= 3000:
         return "summarize"
@@ -24,6 +25,7 @@ def token_counter(state):
     return {}
 
 async def summarize_chat(state: Analytics_Bot) -> Analytics_Bot:
+    llm = LLM()
     messages = state['messages']
 
     messages_to_summarize = messages[-10:]
@@ -44,7 +46,7 @@ async def summarize_chat(state: Analytics_Bot) -> Analytics_Bot:
     - Keep the summary under 200 words.
     """
 
-    result = await llm.llama_70b.ainvoke(prompt)
+    result = await llm.large_model_with_fallback.ainvoke(prompt)
     summary = result.content
 
     latest_human = next(
