@@ -21,4 +21,7 @@ async def chat_node(state: Analytics_Bot):
     result = await llm.mini_model_with_fallback.ainvoke(prompt)
 
 
-    return {"messages": [AIMessage(content=result.content)]}
+    return {
+        "messages": [AIMessage(content=result.content)],
+        "result":result.content
+        }

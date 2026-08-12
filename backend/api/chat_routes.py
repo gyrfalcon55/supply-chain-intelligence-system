@@ -30,4 +30,4 @@ async def chat(request: Request, chat_request: ChatRequest):
         config=config,
     )
 
-    return ChatResponse(answer=response["messages"][-1].content)
+    return ChatResponse(answer=response["result"])

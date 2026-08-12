@@ -32,7 +32,10 @@ async def format_output(state: Analytics_Bot) -> Analytics_Bot:
         })
 
         logging.info(result)
-        return {"messages": [AIMessage(content=result.content)]}
+        return {
+            "messages": [AIMessage(content=result.content)],
+            "result":result.content
+        }
 
     except Exception as e:
         raise CustomException(e, sys)
