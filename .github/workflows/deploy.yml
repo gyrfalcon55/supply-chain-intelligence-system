@@ -50,7 +50,18 @@ jobs:
           docker push \
             ${{ secrets.DOCKERHUB_USERNAME }}/supplychain-frontend:latest
 
-      # 7. Deploy to Azure VM
+      # 7. Copy deployment configuration to Azure VM
+      - name: Copy deployment files to Azure VM
+        uses: appleboy/scp-action@v1.0.0
+        with:
+          host: ${{ secrets.AZURE_HOST }}
+          username: ${{ secrets.AZURE_USERNAME }}
+          key: ${{ secrets.AZURE_SSH_KEY }}
+          source: "docker/docker-compose.azure.yml,docker/litellm/config.yaml"
+          target: "~/supply-chain-ai"
+          overwrite: true
+
+      # 8. Deploy to Azure VM
       - name: Deploy to Azure VM
         uses: appleboy/ssh-action@v1.2.0
         with:
