@@ -118,7 +118,6 @@ An explicit schema definition (`backend/schemas/analytics_schema.json`) was intr
 | **Data** | Pandas, NumPy |
 | **Agentic AI** | LangChain, LangGraph, PostgreSQL MCP, langchain-mcp-adapters |
 | **LLMs** | Ollama (Llama 3.2, Qwen, Gemma), Groq |
-| **Embeddings / Retrieval** | Hugging Face `all-MiniLM-L6-v2`, FAISS / ChromaDB |
 | **Backend** | FastAPI, SQLAlchemy / SQLModel, Pydantic |
 | **Frontend** | Streamlit |
 | **Database** | PostgreSQL (`master_data`, `processed_data`, `forecast_data`, `evaluation_data`) |
