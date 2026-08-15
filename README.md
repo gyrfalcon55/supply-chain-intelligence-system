@@ -1,4 +1,3 @@
-
 <p align="center">
   <img width="1335" height="784" alt="Thumbnail" src="https://github.com/user-attachments/assets/7fdf04f8-f8f7-4e47-9b76-a54d287e9319" />
 </p>
@@ -108,6 +107,27 @@ User Question → Intent Detection → Schema Retrieval → SQL Generation
 
 An explicit schema definition (`backend/schemas/analytics_schema.json`) was introduced to prevent SQL/schema hallucination.
 
+### 7. LLM Orchestration & AI Safety
+Every agent query is wrapped with guardrails on **both sides** of the LLM call — an input check before generation, and an output check (plus PII masking) before anything reaches the user:
+
+```
+User Question
+   ↓
+NeMo Guardrails — Input Check
+   ↓
+LiteLLM Router
+   ↓
+Primary / Fallback LLM
+   ↓
+NeMo Guardrails — Output Check + PII Masking
+   ↓
+SQL Safety Validation
+   ↓
+PostgreSQL
+   ↓
+User
+```
+
 ---
 
 ## 🧰 Tech Stack
@@ -117,7 +137,8 @@ An explicit schema definition (`backend/schemas/analytics_schema.json`) was intr
 | **Forecasting / ML** | Nixtla StatsForecast, CrostonClassic, MLForecast, LightGBM, Scikit-learn, MLflow |
 | **Data** | Pandas, NumPy |
 | **Agentic AI** | LangChain, LangGraph, PostgreSQL MCP, langchain-mcp-adapters |
-| **LLMs** | Ollama (Llama 3.2, Qwen, Gemma), Groq |
+| **LLMs** | Groq (`llama-3.3-70b-versatile`, `gpt-oss-20b`), Gemini (`gemini-3.5-flash-lite`), LiteLLM for model routing |
+| **Security** | NeMo Guardrails |
 | **Backend** | FastAPI, SQLAlchemy / SQLModel, Pydantic |
 | **Frontend** | Streamlit |
 | **Database** | PostgreSQL (`master_data`, `processed_data`, `forecast_data`, `evaluation_data`) |
@@ -148,9 +169,15 @@ The system is fully containerized and deployed on an **Azure Virtual Machine (Ub
 | Frontend (Streamlit) | `frontend` | `8501` |
 | Backend (FastAPI) | `backend` | `8000` |
 | MLflow | `mlflow` | `5000` |
-| PostgreSQL | `postgres` | `5432` (internal only) |
+| LiteLLM proxy | `litellm` | internal only |
+| PostgreSQL | `postgres` | internal only |
 
 - Frontend ↔ Backend communicate via Docker service names (not `127.0.0.1`).
+- LiteLLM runs as a **dedicated Docker service**, separate from the FastAPI backend.
+- The backend communicates with LiteLLM through the Docker Compose network.
+- LiteLLM routes requests to configured LLM providers and handles fallback.
+- NeMo Guardrails runs within the backend application and is not deployed as a separate container.
+- PostgreSQL remains internal to the Docker network.
 - PostgreSQL is **not** exposed to the internet — accessible only within the Docker network.
 - Persistent Docker volumes protect `postgres_data` and `mlflow_artifacts` across container recreation.
 
@@ -180,8 +207,7 @@ Docker Hub acts as the image registry, GitHub Actions as the CI/CD automation la
 git clone https://github.com/gyrfalcon55/supply-chain-intelligence-system.git
 cd supply-chain-intelligence-system
 
-# Configure environment variables (DB, API keys, etc.)
-.env
+# Create a .env file with the required DB credentials and LLM provider API keys
 
 # Build and start the full stack (ensure all env variables are kept in .env)
 docker compose --env-file .env -f docker/docker-compose.yml up --build -d
@@ -216,6 +242,7 @@ pytest -v
 **Summary:** 25 automated pytest tests covering APIs, agents, database-backed functionality, procurement, simulation, and ML components — executed against the local application environment to validate functionality without modifying production data.
 
 <img src="https://img.shields.io/badge/Tests-25%20passing-brightgreen.svg" />
+
 ---
 
 ## 📌 Roadmap / Future Improvements
@@ -230,7 +257,8 @@ pytest -v
 ## 🏛️ Project Architecture
 
 <p align="center">
-  <img width="1536" height="1024" alt="full workflow" src="https://github.com/user-attachments/assets/e4480af2-ea59-450d-bc45-6716660d832d" />
+  <img width="1536" height="1024" alt="ChatGPT Image Aug 16, 2026, 01_15_18 AM" src="https://github.com/user-attachments/assets/c059801a-65e0-44d7-b1fc-2d65b78e3dc9" />
+
 </p>
 
 ---
@@ -238,6 +266,7 @@ pytest -v
 <p align="center">Built as an end-to-end Supply Chain Intelligence Platform — from raw data to production-style deployment.</p>
 
 ---
+
 ## Author
 
 - shaik juanid
