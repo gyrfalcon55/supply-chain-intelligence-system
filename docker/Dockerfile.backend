@@ -8,6 +8,7 @@ RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
 COPY backend ./backend
+COPY docker/nemo_guardrails ./docker/nemo_guardrails
 COPY configs ./configs
 COPY ml_pipeline ./ml_pipeline
 COPY utils ./utils

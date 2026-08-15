@@ -14,3 +14,7 @@ ANALYTICS_GENERATE_SQL_PROMPT_PATH = PROMPTS_PATH / "analytics_generate_sql.txt"
 
 
 ANALYTIC_DB_SCHEMAS_PATH = BASE_DIR / "backend" / "schemas" / "analytics_schema.json"
+
+
+COLANG_CONTENT_PATH = BASE_DIR / "docker" / "nemo_guardrails" / "nemo.co"
+NEMO_CONFIG_PATH = BASE_DIR / "docker" / "nemo_guardrails" / "nemo_config.yml"

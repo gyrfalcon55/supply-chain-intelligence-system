@@ -1,6 +1,6 @@
 from backend.services.mcp_service import mcp
 from backend.agents.analytics_agent.analytics_agent_state import Analytics_Bot
-
+from backend.services.sql_query_validation_service import SQLSafetyService
 
 import re
 import sys
@@ -39,6 +39,8 @@ async def execute_sql(state: Analytics_Bot) -> Analytics_Bot:
                 if previous_result is not None and "{{previous_result}}" in sql:
                     sql = sql.replace("{{previous_result}}", str(previous_result))
 
+                
+                SQLSafetyService.validate(sql)
                 result = await mcp.EXECUTE_TOOL.ainvoke({"sql": sql})
 
                 # ✅ Extract a single value from result to pass forward

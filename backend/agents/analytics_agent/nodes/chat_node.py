@@ -1,27 +1,23 @@
 from backend.agents.analytics_agent.analytics_agent_state import Analytics_Bot
 from langchain_core.messages import AIMessage
 from backend.services.llm_service import LLM
-
+from backend.services.guardrails_service import NeMoGuardrailsService
 
 async def chat_node(state: Analytics_Bot):
 
     llm = LLM()
 
+    guardrails = NeMoGuardrailsService().get_guardrails()
+
     question = state['messages'][-1].content
 
-    prompt =f'''
-        you are an helpful assistant. reply to the user only if the question is not harmful
-        and related to tech only. or greetings.
 
-        otherwise say "can only reply to tech related queries"
-
-        {question}
-        '''
+    guarded_model = guardrails | llm.mini_model_with_fallback
     
-    result = await llm.mini_model_with_fallback.ainvoke(prompt)
+    result = await guarded_model.ainvoke(question)
 
 
     return {
-        "messages": [AIMessage(content=result.content)],
-        "result":result.content
+        "messages": [AIMessage(content=result)],
+        "result":result
         }
