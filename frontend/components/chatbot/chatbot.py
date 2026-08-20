@@ -10,7 +10,8 @@ API_URL = os.getenv("BACKEND_URL", "http://127.0.0.1:8000")
 if "thread_id" not in st.session_state:
     st.session_state.thread_id = str(uuid.uuid4())
 
-st.title("Welcome to the analytics agent -- ")
+st.title("Analytics Agent")
+st.write("For better experience mention the table table name from which you want to query.")
 
 if "messages" not in st.session_state:
     st.session_state.messages = []

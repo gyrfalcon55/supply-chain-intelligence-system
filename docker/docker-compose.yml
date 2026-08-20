@@ -8,11 +8,13 @@ services:
     env_file:
       - ../.env
 
+    # The environment variables are extracted from the .env file in Azure vm instance
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: SupplyChainDatabase
 
+    # As we need to preserve the same data so persistance is required, and volumes are used to make postgres data persistant.
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -35,6 +37,7 @@ services:
     env_file:
       - ../.env
 
+    # The environment variables are extracted from the .env file in Azure vm instance
     environment:
       DB_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/SupplyChainDatabase
       MODEL_DB_URL: postgresql://postgres:${POSTGRES_PASSWORD}@postgres:5432/MLflowDatabase

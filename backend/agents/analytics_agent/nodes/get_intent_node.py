@@ -12,30 +12,50 @@ async def classify_intent(state):
     return {}
 
 async def intent_router(state: Analytics_Bot) -> str:
-    llm = LLM()
-    question = state['messages'][-1].content
-    recent_messages = get_buffer_string(state['messages'][-6:])
 
-    prompt = f"""
-    You are an intent classifier.
-    
-    RECENT MESSAGES: {recent_messages}
-    QUESTION: {question}
+    try:
 
-    Classify the question into one of:
-    - "formal_chat" → greeting from user or general chatting 
-    - "sql"       → needs database query (fetch/filter/aggregate data)
-    - "format"    → just reformatting or summarizing already returned data
+        '''
+        This function classifies the intention of the user query, 
+        formal chat, sql, format, based on the output the next step is decided
+        
+        '''
 
-    Return ONLY one word: sql or format or formal_chat. No explanation.
-    """
+        logging.info("intent router triggered")
 
-    result = await llm.mini_model_with_fallback.ainvoke(prompt)
-    intent = result.content.strip().lower()
+        llm = LLM()
+        question = state['messages'][-1].content
+        recent_messages = get_buffer_string(state['messages'][-6:])
 
-    if "format" in intent:
-        return "format"
-    elif "sql" in intent:
-        return "sql"
-    else:
-        return "formal_chat"
+        prompt = f"""
+        You are an intent classifier.
+        
+        RECENT MESSAGES: {recent_messages}
+        QUESTION: {question}
+
+        Classify the question into one of:
+        - "formal_chat" → greeting from user or general chatting 
+        - "sql"       → needs database query (fetch/filter/aggregate data)
+        - "format"    → just reformatting or summarizing already returned data
+
+        Return ONLY one word: sql or format or formal_chat. No explanation.
+        """
+
+        result = await llm.mini_model_with_fallback.ainvoke(prompt)
+        intent = result.content.strip().lower()
+
+        if "format" in intent:
+            logging.info(f"The intention of the user query is 'FORMAT'")
+            return "format"
+        elif "sql" in intent:
+            logging.info(f"The intention of the user query is 'SQL'")
+            return "sql"
+        else:
+            logging.info(f"The intention of the user query is 'FORMAL_CHAT'")
+            return "formal_chat"
+
+        
+
+    except Exception as e:
+        logging.error("Error in the intent router block")
+        raise CustomException(e,sys)

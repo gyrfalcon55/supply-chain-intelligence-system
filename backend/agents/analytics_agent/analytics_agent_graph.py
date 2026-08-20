@@ -22,11 +22,15 @@ from backend.agents.analytics_agent.nodes.get_intent_node import intent_router, 
 
 from backend.agents.analytics_agent.nodes.chat_node import chat_node
 
+from utils.logger import logging
+from utils.exception import CustomException
 
 
 def build_graph(checkpointer):
     
     try:
+
+        logging.info("Agent Graph initialized for AnalyticsBot")
 
         graph = StateGraph(Analytics_Bot)
 
@@ -67,8 +71,10 @@ def build_graph(checkpointer):
 
         workflow = graph.compile(checkpointer)
 
+        logging.info("Agent Graph compiled")
 
         return workflow
 
     except Exception as e:
+        logging.error("Error while building the Agent Graph")
         raise CustomException(e,sys)

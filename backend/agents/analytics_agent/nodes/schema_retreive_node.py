@@ -19,22 +19,28 @@ config = load_config()
 analytics_schema_details = ANALYTIC_DB_SCHEMAS_PATH
 
 
-RAW_SCHEMA = load_schema(analytics_schema_details)  # load once at startup, not inside the node
+RAW_SCHEMA = load_schema(analytics_schema_details)
 
 async def relevant_schema(state: Analytics_Bot) -> Analytics_Bot:
     try:
+        '''
+        This function returns the relevant schema based on the user query, the llm uses the details from schema config file
+        and returns table, column details based on the query
+
+        '''
+
+        logging.info("Schema retreival started")
 
         llm = LLM()
         question = state['messages'][-1].content
         summary = state.get('conversation_summary') or "No conversation summary found"
         recent_messages = get_buffer_string(state['messages'][-6:])
-        # Give LLM only what it needs to PICK a table — no column details
         table_hints = [
             {
                 "schema": e["schema"],
                 "table": e["table"],
                 "description": e["description"],
-                "keywords": e["keywords"]   # ← LLM matches intent to keywords
+                "keywords": e["keywords"]
             }
             for e in RAW_SCHEMA
         ]
@@ -68,7 +74,6 @@ async def relevant_schema(state: Analytics_Bot) -> Analytics_Bot:
 
         })
 
-        # LLM picks the table — code fetches the exact columns
         selected = json.loads(response.content)
         enriched = []
         for item in selected:
@@ -78,9 +83,12 @@ async def relevant_schema(state: Analytics_Bot) -> Analytics_Bot:
                 enriched.append({
                     "schema": match["schema"],
                     "table": match["table"],
-                    "columns": match["columns"]  # always from code, never from LLM
+                    "columns": match["columns"]
                 })
+
+        logging.info("Schema Retreived Successfully")
         return {"schema": json.dumps(enriched)}
 
     except Exception as e:
+        logging.error(f"Error in Schema retrieval")
         raise CustomException(e, sys)

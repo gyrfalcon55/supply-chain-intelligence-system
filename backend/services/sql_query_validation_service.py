@@ -1,6 +1,6 @@
 from sqlglot import parse
 from sqlglot.errors import ParseError
-
+from utils.logger import logging
 
 class SQLSafetyService:
 
@@ -15,6 +15,8 @@ class SQLSafetyService:
         Only SELECT statements are allowed.
         Multiple statements are rejected.
         """
+
+        logging.info("validating generated sql query")
 
         if not query or not query.strip():
             raise ValueError("SQL query cannot be empty.")
@@ -42,6 +44,7 @@ class SQLSafetyService:
         statement_type = statement.key.upper()
 
         if statement_type not in cls.ALLOWED_STATEMENTS:
+            logging.error("Generated sql query contains unsafe operations, query not allowed.")
             raise ValueError(
                 f"Unsafe SQL operation '{statement_type}'. "
                 "Only SELECT statements are allowed."
