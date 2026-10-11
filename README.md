@@ -1,273 +1,320 @@
 <p align="center">
-  <img width="1335" height="784" alt="Thumbnail" src="https://github.com/user-attachments/assets/7fdf04f8-f8f7-4e47-9b76-a54d287e9319" />
+  <img width="1335" alt="Supply Chain Intelligence System" src="https://github.com/user-attachments/assets/7fdf04f8-f8f7-4e47-9b76-a54d287e9319" />
 </p>
 
-<h1 align="center">📦 Supply Chain Intelligence System</h1>
-<h3 align="center">An End-to-End Demand Forecasting, Inventory, Procurement & Agentic Analytics Platform</h3>
+<h1 align="center">Supply Chain Intelligence System</h1>
+<p align="center">
+  <strong>An end-to-end platform for demand forecasting, inventory intelligence, procurement planning, simulation, and agentic analytics.</strong>
+</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.10+-blue.svg" />
-  <img src="https://img.shields.io/badge/FastAPI-Backend-009688.svg" />
-  <img src="https://img.shields.io/badge/Streamlit-Frontend-FF4B4B.svg" />
-  <img src="https://img.shields.io/badge/PostgreSQL-Database-336791.svg" />
-  <img src="https://img.shields.io/badge/Docker-Containerized-2496ED.svg" />
-  <img src="https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-2088FF.svg" />
-  <img src="https://img.shields.io/badge/Deployed%20on-Azure-0078D4.svg" />
+  <img src="https://img.shields.io/badge/Python-3.10+-blue.svg" alt="Python 3.10+" />
+  <img src="https://img.shields.io/badge/FastAPI-Backend-009688.svg" alt="FastAPI" />
+  <img src="https://img.shields.io/badge/React-Frontend-61DAFB.svg" alt="React" />
+  <img src="https://img.shields.io/badge/Vite-Build%20Tool-646CFF.svg" alt="Vite" />
+  <img src="https://img.shields.io/badge/Tailwind%20CSS-Styling-06B6D4.svg" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Database-336791.svg" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Docker-Containerization-2496ED.svg" alt="Docker" />
+  <img src="https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF.svg" alt="GitHub Actions" />
+  <img src="https://img.shields.io/badge/Azure-Deployment-0078D4.svg" alt="Microsoft Azure" />
 </p>
 
 ---
 
-## 🧭 Overview
+## Overview
 
-This project goes beyond a conventional machine-learning forecasting notebook — it is a full **Supply Chain Intelligence System** that connects **demand forecasting, inventory intelligence, supplier analysis, procurement planning, simulation, and agentic natural-language analytics** into a single, production-deployed platform.
+The Supply Chain Intelligence System is an applied AI and data platform designed to connect demand forecasting with operational supply-chain workflows. It brings together data preparation, intermittent-demand forecasting, inventory-risk classification, supplier analysis, procurement recommendations, sales simulation, and natural-language analytics.
 
-Given historical sales and supply-chain data, the system answers real operational questions:
+The platform is designed to answer questions such as:
 
-- What products are likely to be in demand?
-- Which SKUs are at risk of stockout?
-- When should procurement happen, and how much should be ordered?
-- Do existing procurement orders already cover future requirements?
-- Which suppliers should be used?
-- How will today's decisions affect inventory in the future?
+- Which products are likely to be needed in upcoming periods?
+- Which SKUs are at risk of running out of stock?
+- When should replenishment happen, and what quantities should be ordered?
+- Do active procurement orders already cover expected requirements?
+- Which suppliers are suitable for a replenishment order?
+- How could simulated sales and deliveries affect future inventory?
 
-The system was designed, built, containerized, and deployed end-to-end — from raw data to a live cloud application with CI/CD.
+The architecture keeps critical calculations—such as forecasting, inventory classification, and procurement quantities—in deterministic application logic. LLM-based agents support natural-language analytics and workflow orchestration rather than replacing business rules.
 
----
-
-## 📊 Dataset
+## Dataset
 
 | Attribute | Details |
 |---|---|
-| **Scope** | ~200 SKUs across 7 product categories |
-| **Time Range** | Historical sales data from **2022 to 2024** |
-| **Demand Pattern** | Highly **intermittent demand** (large proportion of zero-demand periods) |
-| **Fields** | Product details, SKU, category, subcategory, price, availability, units sold, revenue, stock levels, reorder level, safety stock, suppliers, lead times, order quantities, procurement & delivery info |
+| Scope | Approximately 200 SKUs across 7 product categories |
+| Historical period | 2022–2024 |
+| Demand profile | Intermittent demand, including periods with zero sales |
+| Data domains | Products, sales, inventory, suppliers, lead times, procurement, and delivery information |
 
----
+## Key Features
 
-## 🔮 Forecasting Approach
+### Demand forecasting
 
-The forecasting strategy evolved through several iterations before settling on a model suited to intermittent demand:
+- Aggregates historical sales into continuous weekly time series per SKU.
+- Uses **StatsForecast with CrostonClassic** as the primary intermittent-demand forecasting method.
+- Uses **SeasonalNaive** as a baseline.
+- Evaluates forecasts using MAE, RMSE, SMAPE, MASE, and WMAPE.
+- Tracks experiments and artifacts with MLflow.
 
-1. **Per-SKU Prophet models** — explored first, but impractical to scale to ~200 SKUs.
-2. **Nixtla MLForecast + LightGBM (global model)** — trained across all SKUs simultaneously using lag features, rolling/expanding statistics, exponentially weighted statistics, and calendar features.
-3. **Nixtla StatsForecast + CrostonClassic** *(final approach)* — chosen specifically because it's built for intermittent demand, with `SeasonalNaive` used as a baseline.
-
-Sales history was transformed into continuous weekly time series per SKU using the standard `unique_id | ds | y` format, with missing weeks treated as zero demand.
-
-### ✅ Final Model Performance
+Reported model metrics:
 
 | Metric | Value |
+|---|---:|
+| MAE | 2.9635 |
+| RMSE | 3.3276 |
+| MASE | 0.6540 |
+
+These metrics reflect the reported evaluation for the project dataset; results may vary with data splits and pipeline changes.
+
+### Inventory intelligence
+
+Inventory rules combine forecasts with current stock, reorder levels, and safety stock to assign operational statuses.
+
+| Status | Meaning |
 |---|---|
-| **MAE** | 2.9634629 |
-| **RMSE** | 3.327645 |
-| **MASE** | 0.653956 |
+| `CRITICAL` | Immediate stockout risk |
+| `REORDER_NOW` | Replenishment is required |
+| `AT_RISK` | Inventory may run short soon |
+| `SUFFICIENT` | Current stock covers projected requirements |
 
-Experiments and model artifacts were tracked using **MLflow**.
+### Supplier and procurement intelligence
 
----
+- Reviews current procurement orders before recommending additional orders.
+- Helps avoid duplicate orders when active orders already cover requirements.
+- Consolidates replenishment needs and supports supplier assignment.
+- Includes a human-in-the-loop workflow for reviewing, editing, submitting, and approving procurement recommendations.
+- Preserves procurement transactions and order history.
 
-## 🏗️ System Workflow
+### Sales and inventory simulation
 
-```
-Historical Data → Preprocessing → Intermittent-Demand Forecasting → Forecast Evaluation
-   → Inventory Intelligence → Stockout-Risk Classification → Supplier Intelligence
-   → Procurement Planning → Sales & Inventory Simulation → Agentic NL Analytics
-```
+The simulation interface is intended to model the effects of sales, inventory depletion, procurement progress, shipment arrivals, and replenishment over time. Actual simulation behavior depends on the backend implementation and its current state.
 
-### 1. Data Processing
-Cleaning, missing-value handling, weekly aggregation, and continuous time-series construction per SKU.
+### Agentic analytics
 
-### 2. Demand Forecasting
-StatsForecast (CrostonClassic) as the primary model, SeasonalNaive as baseline, evaluated using MAE, RMSE, SMAPE, MASE, and WMAPE.
+The Analytics Agent allows users to ask natural-language questions about supply-chain data. Its workflow uses LangChain/LangGraph and PostgreSQL MCP integration to support schema-aware SQL generation, query execution, and result formatting.
 
-### 3. Inventory Intelligence
-Combines forecasts with `Current_Stock`, `Reorder_Level`, and `Safety_Stock` to classify each SKU into an operational state:
+An explicit analytics schema is maintained at `backend/schemas/analytics_schema.json` to reduce schema-related generation errors.
 
-| State | Meaning |
-|---|---|
-| 🔴 `CRITICAL` | Immediate stockout risk |
-| 🟠 `REORDER_NOW` | Replenishment required now |
-| 🟡 `AT_RISK` | May run short soon |
-| 🟢 `SUFFICIENT` | Stock covers projected demand |
+### LLM routing and guardrails
 
-### 4. Supplier & Procurement Intelligence
-Compares **existing procurement orders** (pending / in-transit / delivered) against **newly calculated requirements** before recommending new orders — avoiding duplicate procurement — and suggests suppliers based on lead time and performance.
+The backend architecture includes LiteLLM for model routing/fallback and NeMo Guardrails for input/output checks. SQL safety validation and PII masking are intended to provide additional controls around model-assisted analytics. These controls should be reviewed and tested against the actual deployment configuration before production use.
 
-### 5. Sales & Supply-Chain Simulation
-Simulates future sales, inventory depletion, procurement, shipment movement, supplier lead times, replenishment, and stockout conditions to project future inventory outcomes.
-
-### 6. Agentic Analytics Chatbot
-A LangChain/LangGraph-orchestrated agent lets users ask natural-language questions about the supply chain database instead of writing SQL:
-
-```
-User Question → Intent Detection → Schema Retrieval → SQL Generation
-   → SQL Execution (via PostgreSQL MCP) → Result Formatting → NL Response
-```
-
-An explicit schema definition (`backend/schemas/analytics_schema.json`) was introduced to prevent SQL/schema hallucination.
-
-### 7. LLM Orchestration & AI Safety
-Every agent query is wrapped with guardrails on **both sides** of the LLM call — an input check before generation, and an output check (plus PII masking) before anything reaches the user:
-
-```
-User Question
-   ↓
-NeMo Guardrails — Input Check
-   ↓
-LiteLLM Router
-   ↓
-Primary / Fallback LLM
-   ↓
-NeMo Guardrails — Output Check + PII Masking
-   ↓
-SQL Safety Validation
-   ↓
-PostgreSQL
-   ↓
-User
-```
-
----
-
-## 🧰 Tech Stack
+## Technology Stack
 
 | Layer | Technologies |
 |---|---|
-| **Forecasting / ML** | Nixtla StatsForecast, CrostonClassic, MLForecast, LightGBM, Scikit-learn, MLflow |
-| **Data** | Pandas, NumPy |
-| **Agentic AI** | LangChain, LangGraph, PostgreSQL MCP, langchain-mcp-adapters |
-| **LLMs** | Groq (`llama-3.3-70b-versatile`, `gpt-oss-20b`), Gemini (`gemini-3.5-flash-lite`), LiteLLM for model routing |
-| **Security** | NeMo Guardrails |
-| **Backend** | FastAPI, SQLAlchemy / SQLModel, Pydantic |
-| **Frontend** | Streamlit |
-| **Database** | PostgreSQL (`master_data`, `processed_data`, `forecast_data`, `evaluation_data`) |
-| **Visualization** | Plotly, Matplotlib |
-| **Infra / DevOps** | Docker, Docker Compose, Docker Hub, GitHub Actions, Microsoft Azure (Ubuntu 24.04 LTS VM) |
+| Forecasting and ML | Nixtla StatsForecast, CrostonClassic, MLForecast, LightGBM, scikit-learn, MLflow |
+| Data processing | Python, Pandas, NumPy |
+| Agentic AI | LangChain, LangGraph, PostgreSQL MCP, `langchain-mcp-adapters` |
+| LLM integration | Groq, Gemini, LiteLLM |
+| Guardrails | NeMo Guardrails |
+| Backend API | FastAPI, Pydantic, SQLAlchemy / SQLModel |
+| Frontend | React, Vite, Tailwind CSS, React Router |
+| Visualization | Recharts, Plotly, Matplotlib |
+| Database | PostgreSQL |
+| Infrastructure | Docker, Docker Compose, Docker Hub, GitHub Actions, Microsoft Azure |
 
----
+## Application Modules
 
-## 🖥️ Application Modules
-
-| Module | Description |
+| Module | Purpose |
 |---|---|
-| **Analytics Agent** | Ask natural-language questions about supply-chain data |
-| **Table Viewer** | Browse raw and processed tables |
-| **Inventory & Supplier Reports** | Stock levels, reorder status, supplier performance |
-| **Procurement Orders** | Track pending / in-transit / delivered orders |
-| **Simulation** | Run future sales & inventory simulations |
-| **ML Pipeline** | Trigger preprocessing, training, forecasting, and evaluation |
+| Analytics Agent | Ask natural-language questions about supply-chain data |
+| View Tables | Browse supplier, inventory, and sales-order records |
+| Inventory & Supplier Reports | Inspect stock levels, inventory status, and supplier metrics |
+| Procurement Orders | Review and approve procurement recommendations |
+| Sales Simulation | Run and inspect sales/inventory simulation actions exposed by the backend |
+| ML Pipeline | Trigger pipeline jobs and inspect their status and metrics |
 
----
+## Architecture
 
-## 🐳 Deployment Architecture
+```text
+Historical Sales & Supply-Chain Data
+                |
+                v
+     Data Validation and Processing
+                |
+                v
+  Weekly Demand Forecasting (CrostonClassic)
+                |
+                v
+      Forecast Evaluation + MLflow
+                |
+                v
+ Inventory Risk + Supplier Intelligence
+                |
+                v
+ Procurement Recommendations and Approval
+                |
+                v
+     Sales / Inventory Simulation
 
-The system is fully containerized and deployed on an **Azure Virtual Machine (Ubuntu 24.04 LTS)**:
+React + Vite Frontend <----> FastAPI Backend <----> PostgreSQL
+                                  |
+                                  +---- LangGraph Analytics Agent
+                                  |          |
+                                  |          +---- PostgreSQL MCP
+                                  |
+                                  +---- LiteLLM model routing
+                                  |
+                                  +---- NeMo Guardrails
+```
 
-| Service | Container | Port |
-|---|---|---|
-| Frontend (Streamlit) | `frontend` | `8501` |
-| Backend (FastAPI) | `backend` | `8000` |
-| MLflow | `mlflow` | `5000` |
-| LiteLLM proxy | `litellm` | internal only |
-| PostgreSQL | `postgres` | internal only |
+## Frontend Setup (React + Vite)
 
-- Frontend ↔ Backend communicate via Docker service names (not `127.0.0.1`).
-- LiteLLM runs as a **dedicated Docker service**, separate from the FastAPI backend.
-- The backend communicates with LiteLLM through the Docker Compose network.
-- LiteLLM routes requests to configured LLM providers and handles fallback.
-- NeMo Guardrails runs within the backend application and is not deployed as a separate container.
-- PostgreSQL remains internal to the Docker network.
-- PostgreSQL is **not** exposed to the internet — accessible only within the Docker network.
-- Persistent Docker volumes protect `postgres_data` and `mlflow_artifacts` across container recreation.
+### Requirements
 
-### CI/CD Pipeline (GitHub Actions)
+- Node.js 18 or newer (Node.js 20+ recommended)
+- npm
+- A running FastAPI backend with the endpoints listed below
 
-On every push to `main`:
+### Install and run
 
-1. Checkout repository
-2. Authenticate with Docker Hub
-3. Build & push backend image
-4. Build & push frontend image
-5. SSH into Azure VM
-6. Pull latest images
-7. Recreate **only** backend & frontend containers
-   *(PostgreSQL and MLflow containers are deliberately preserved to protect production data)*
-
-Docker Hub acts as the image registry, GitHub Actions as the CI/CD automation layer, and Azure as the production runtime.
-
-> **Note:** The Azure VM can be shut down after demos to avoid ongoing costs — the source code, Docker configuration, database backup, and CI/CD workflow remain available for redeployment at any time.
-
----
-
-## 🚀 Getting Started
+From the React frontend directory:
 
 ```bash
-# Clone the repository
-git clone https://github.com/gyrfalcon55/supply-chain-intelligence-system.git
-cd supply-chain-intelligence-system
+npm install
+```
 
-# Create a .env file with the required DB credentials and LLM provider API keys
+Copy `.env.example` to `.env` and configure the backend URL:
 
-# Build and start the full stack (ensure all env variables are kept in .env)
+```env
+VITE_API_URL=http://127.0.0.1:8000
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Open the local URL printed by Vite, usually `http://localhost:5173`.
+
+### Production build
+
+```bash
+npm run build
+npm run preview
+```
+
+The production-ready static assets are generated in `dist/`.
+
+### Frontend environment variable
+
+| Variable | Purpose | Default |
+|---|---|---|
+| `VITE_API_URL` | Base URL of the FastAPI backend | `http://127.0.0.1:8000` |
+
+If the frontend and backend run on different origins, configure FastAPI CORS middleware to allow the frontend origin (for local development, usually `http://localhost:5173`).
+
+## Backend API Integration
+
+The React frontend currently calls these backend paths:
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `POST` | `/chat` | Analytics Agent conversation |
+| `POST` | `/table_view` | Retrieve table records |
+| `GET` | `/sales_orders` | Sales-order data and available plot data |
+| `GET` | `/suppliers` | Supplier data and available plot data |
+| `GET` | `/inventory` | Inventory data and available plot data |
+| `POST` | `/reports` | Inventory/supplier report data |
+| `POST` | `/procurement_orders` | Generate or retrieve procurement recommendations |
+| `POST` | `/procurement_orders/final_list` | Submit the reviewed procurement list |
+| `POST` | `/simulation/run_day` | Run a simulation step |
+| `POST` | `/ml_pipeline` | Start an ML pipeline job |
+| `GET` | `/ml_pipeline/status/{job_id}` | Retrieve pipeline job status |
+
+The frontend expects these routes and payloads to match the backend. If your backend uses different routes or response shapes, update `src/lib/api.js` and the relevant page components.
+
+### Table-view performance
+
+The View Tables page requests up to 100 records using the `limit` field. For large tables—especially sales data—the backend must enforce the limit in its database query (for example, using SQL `LIMIT`) rather than loading all records and truncating the response afterward. If pagination is implemented, use a validated `limit` and `offset` on the backend and request each page from the frontend as needed.
+
+## Backend and Full-Stack Deployment
+
+The backend project includes FastAPI, PostgreSQL, MLflow, model-routing configuration, and Docker-based deployment components. The exact commands and environment variables depend on the backend repository's `docker/` configuration.
+
+For the full-stack Docker setup, the original project command is:
+
+```bash
 docker compose --env-file .env -f docker/docker-compose.yml up --build -d
 ```
 
-| Service | URL |
+Before running it:
+
+1. Create the required `.env` file using the environment-variable names expected by the Compose file.
+2. Set database credentials and required LLM provider keys.
+3. Confirm that the Docker Compose file and referenced Dockerfiles exist in the repository.
+4. Keep PostgreSQL credentials and API keys out of source control.
+
+The previously used deployment architecture included the React/Streamlit-era frontend service, FastAPI backend, MLflow, LiteLLM, and PostgreSQL. Update service names, ports, and Docker configuration to match the current React frontend before deploying the converted UI.
+
+### Local service URLs
+
+| Service | Typical local URL |
 |---|---|
-| Streamlit Frontend | http://localhost:8501 |
-| FastAPI Backend | http://localhost:8000 |
-| MLflow UI | http://localhost:5000 |
+| React + Vite frontend | `http://localhost:5173` |
+| FastAPI backend | `http://127.0.0.1:8000` |
+| FastAPI OpenAPI docs | `http://127.0.0.1:8000/docs` |
+| MLflow UI, if enabled | `http://localhost:5000` |
 
----
+## Testing
 
-## 🧪 Testing
+The backend project has a reported 25-test `pytest` suite covering API and application functionality, including table views, reports, procurement operations, simulation, pipeline endpoints, agent components, and ML components.
 
-The project includes a **25-test pytest suite** covering both API and application-level functionality. The tests validate backend availability, table-view APIs, sales/supplier/inventory dashboards, report generation, procurement operations, simulation, ML pipeline endpoints, agent components, and ML/feature-engineering components.
-
-The API tests use a configurable `API_URL`, with the default pointing to the local FastAPI server:
-
-```bash
-API_URL=http://127.0.0.1:8000
-```
-
-Run the full suite against the local FastAPI + PostgreSQL environment:
+Run tests from the backend repository/environment where its dependencies are installed:
 
 ```bash
 pytest -v
 ```
 
-> **Note:** The test suite is intentionally **not** run against the Azure production database. Some tests — particularly procurement, simulation, and ML-pipeline tests — can modify database state or trigger processing. Running only locally keeps production data isolated while still providing a full regression and integration-testing layer during development.
+For local API tests, the project has used an `API_URL` environment variable with a default of `http://127.0.0.1:8000`.
 
-**Summary:** 25 automated pytest tests covering APIs, agents, database-backed functionality, procurement, simulation, and ML components — executed against the local application environment to validate functionality without modifying production data.
+Tests that mutate procurement, simulation, or pipeline state should be run against a local development database—not a production database.
 
-<img src="https://img.shields.io/badge/Tests-25%20passing-brightgreen.svg" />
+## Project Structure (Frontend)
 
----
+```text
+.
+├── index.html
+├── package.json
+├── vite.config.js
+├── tailwind.config.js
+├── postcss.config.js
+├── .env.example
+└── src/
+    ├── main.jsx
+    ├── App.jsx
+    ├── index.css
+    ├── components/
+    │   ├── Layout.jsx
+    │   └── UI.jsx
+    ├── lib/
+    │   └── api.js
+    └── pages/
+        ├── ChatPage.jsx
+        ├── TablesPage.jsx
+        ├── ReportsPage.jsx
+        ├── ProcurementPage.jsx
+        ├── SimulationPage.jsx
+        └── PipelinePage.jsx
+```
 
-## 📌 Roadmap / Future Improvements
+## Roadmap
 
-- [ ] Expand forecasting benchmarks across additional intermittent-demand models
+- [ ] Benchmark additional intermittent-demand forecasting methods
 - [ ] Add automated retraining triggers
 - [ ] Extend the analytics agent with multi-turn conversational memory
 - [ ] Add role-based access control for procurement approvals
-
----
-
-## 🏛️ Project Architecture
-
-<p align="center">
-  <img width="1536" height="1024" alt="ChatGPT Image Aug 16, 2026, 01_15_18 AM" src="https://github.com/user-attachments/assets/c059801a-65e0-44d7-b1fc-2d65b78e3dc9" />
-
-</p>
-
----
-
-<p align="center">Built as an end-to-end Supply Chain Intelligence Platform — from raw data to production-style deployment.</p>
-
----
+- [ ] Implement server-side pagination for all large table views
+- [ ] Align Docker deployment and CI/CD with the React + Vite frontend
 
 ## Author
 
-- shaik juanid
-- portfolio - [sjunaid.in](https://sjunaid.in)
+**Shaik Junaid**  
+Portfolio: [sjunaid.in](https://sjunaid.in)
+
+---
+
+<p align="center">
+  Built as an end-to-end supply-chain intelligence platform, connecting forecasting, operational workflows, and agentic analytics.
+</p>
