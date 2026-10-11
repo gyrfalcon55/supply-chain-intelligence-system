@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="1335" alt="Supply Chain Intelligence System" src="https://github.com/user-attachments/assets/7fdf04f8-f8f7-4e47-9b76-a54d287e9319" />
+  <img width="1456" height="720" alt="supplychain thumbnail" src="https://github.com/user-attachments/assets/630b4ad8-27f4-426c-b1c4-3e07b4f640fd" />
 </p>
 
 <h1 align="center">Supply Chain Intelligence System</h1>
